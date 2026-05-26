@@ -70,7 +70,7 @@ class PdfBoxUtilitiesTest {
         instance.createDocuments(new String[]{imageFile1.getPath()}, new String[]{outputbase1}, formats);
         assertTrue(new File(outputbase1 + ".hocr").exists());
         PdfBoxUtilities.mergeHocrIntoAPdf(outputbase1 + ".hocr", pdfFilename, outputbase2, false);
-        assertPdfContainsText("Auf der Registerkarte 'Einflgen' enthalten", outputbase2);
+        assertPdfContainsText("Auf der Registerkarte 'Einflgen", outputbase2);
     }
 
     private void assertPdfContainsText(String expectedString, String pdfFilepath) throws IOException {

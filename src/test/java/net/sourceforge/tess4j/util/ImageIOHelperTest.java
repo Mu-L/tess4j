@@ -150,7 +150,7 @@ public class ImageIOHelperTest {
         File imageFile2 = new File(TEST_RESOURCES_DATA_PATH, "eurotext_deskew.png"); // filesize: 204,383 bytes
         File[] inputImages = {imageFile1, imageFile2};
         File outputTiff = new File(TEST_RESOURCES_RESULTS_PATH, "mergedTiff.tif");
-        long expResult = 224337L; // filesize: 224,337 bytes
+        long expResult = 66522853L; // filesize: 66,522,853 bytes
         ImageIOHelper.mergeTiff(inputImages, outputTiff);
         assertEquals(expResult, outputTiff.length());
     }

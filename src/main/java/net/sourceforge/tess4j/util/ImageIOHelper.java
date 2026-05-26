@@ -95,8 +95,6 @@ public class ImageIOHelper {
      * @throws IOException
      */
     public static List<File> createTiffFiles(File imageFile, int index, boolean preserve) throws IOException {
-        List<File> tiffFiles = new ArrayList<>();
-
         String imageFormat = getImageFileFormat(imageFile);
 
         Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(imageFormat);
@@ -118,14 +116,15 @@ public class ImageIOHelper {
             // IIOMetadata streamMetadata = reader.getStreamMetadata();
 
             // Set up the writeParam
-            TIFFImageWriteParam tiffWriteParam = new TIFFImageWriteParam(Locale.US);
+            ImageWriteParam tiffWriteParam = writer.getDefaultWriteParam();
             if (!preserve) {
                 // not preserve original sizes; decompress
                 tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED);
             }
             // Read the stream metadata
             IIOMetadata streamMetadata = writer.getDefaultStreamMetadata(tiffWriteParam);
-
+            
+            List<File> tiffFiles = new ArrayList<>();
             int imageTotal = reader.getNumImages(true);
 
             for (int i = 0; i < imageTotal; i++) {
@@ -166,22 +165,22 @@ public class ImageIOHelper {
     }
 
     public static List<File> createTiffFiles(List<IIOImage> imageList, int index, int dpiX, int dpiY) throws IOException {
-        List<File> tiffFiles = new ArrayList<>();
-
-        //Set up the writeParam
-        TIFFImageWriteParam tiffWriteParam = new TIFFImageWriteParam(Locale.US);
-        tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED);
-
         //Get tiff writer and set output to file
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(TIFF_FORMAT);
         if (!writers.hasNext()) {
             throw new RuntimeException(JAI_IMAGE_WRITER_MESSAGE);
         }
         ImageWriter writer = writers.next();
+        
+        //Set up the writeParam
+        ImageWriteParam tiffWriteParam = writer.getDefaultWriteParam();
+        tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED);
 
         //Get the stream metadata
         IIOMetadata streamMetadata = writer.getDefaultStreamMetadata(tiffWriteParam);
-
+        
+        List<File> tiffFiles = new ArrayList<>();
+        
         // all if index == -1; otherwise, only index-th
         for (IIOImage oimage : (index == -1 ? imageList : imageList.subList(index, index + 1))) {
             if (dpiX != 0 && dpiY != 0) {
@@ -475,16 +474,13 @@ public class ImageIOHelper {
         ImageWriter writer = writers.next();
 
         //Set up the writeParam
-        TIFFImageWriteParam tiffWriteParam = new TIFFImageWriteParam(Locale.US);
+        ImageWriteParam tiffWriteParam = writer.getDefaultWriteParam();
 //        tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED); // commented out to preserve original sizes
-
-        //Get the stream metadata
-        IIOMetadata streamMetadata = writer.getDefaultStreamMetadata(tiffWriteParam);
 
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputTiff)) {
             writer.setOutput(ios);
-            boolean firstPage = true;
-            int index = 1;
+            writer.prepareWriteSequence(null);
+
             for (File inputImage : inputImages) {
                 String imageFileFormat = getImageFileFormat(inputImage);
                 Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(imageFileFormat);
@@ -497,12 +493,7 @@ public class ImageIOHelper {
                     int imageTotal = reader.getNumImages(true);
                     for (int i = 0; i < imageTotal; i++) {
                         IIOImage oimage = reader.readAll(i, reader.getDefaultReadParam());
-                        if (firstPage) {
-                            writer.write(streamMetadata, oimage, tiffWriteParam);
-                            firstPage = false;
-                        } else {
-                            writer.writeInsert(index++, oimage, tiffWriteParam);
-                        }
+                        writer.writeToSequence(oimage, tiffWriteParam);
                     }
                 } finally {
                     if (reader != null) {
@@ -510,6 +501,8 @@ public class ImageIOHelper {
                     }
                 }
             }
+            
+            writer.endWriteSequence();
         } finally {
             writer.dispose();
         }
@@ -576,18 +569,16 @@ public class ImageIOHelper {
         ImageWriter writer = writers.next();
 
         //Set up the writeParam
-        TIFFImageWriteParam tiffWriteParam = new TIFFImageWriteParam(Locale.US);
+        ImageWriteParam tiffWriteParam = writer.getDefaultWriteParam();
 //        tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED); // comment out to preserve original sizes
         if (compressionType != null) {
             tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             tiffWriteParam.setCompressionType(compressionType);
         }
 
-        //Get the stream metadata
-        IIOMetadata streamMetadata = writer.getDefaultStreamMetadata(tiffWriteParam);
-
         try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputTiff)) {
             writer.setOutput(ios);
+            writer.prepareWriteSequence(null);
 
             int dpiX = 300;
             int dpiY = 300;
@@ -601,13 +592,11 @@ public class ImageIOHelper {
                 iioImage.setMetadata(imageMetadata);
             }
 
-            IIOImage firstIioImage = imageList.remove(0);
-            writer.write(streamMetadata, firstIioImage, tiffWriteParam);
-
-            int i = 1;
             for (IIOImage iioImage : imageList) {
-                writer.writeInsert(i++, iioImage, tiffWriteParam);
+                writer.writeToSequence(iioImage, tiffWriteParam);
             }
+            
+            writer.endWriteSequence();
         } finally {
             writer.dispose();
         }
