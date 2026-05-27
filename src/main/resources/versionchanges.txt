@@ -279,3 +279,7 @@ Version 5.17.0 (10 December 2025)
 
 Version 5.18.0 (15 January 2026)
 - Upgrade to Tesseract 5.5.2
+
+Version 5.19.0 (26 May 2026)
+- Update lept4j-1.24.0
+- Fix IndexOutOfBoundsException issue with Java 26
