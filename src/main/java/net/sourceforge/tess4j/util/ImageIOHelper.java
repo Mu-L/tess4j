@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import javax.imageio.IIOImage;
@@ -52,7 +51,6 @@ import org.w3c.dom.NodeList;
 import com.github.jaiimageio.plugins.tiff.BaselineTIFFTagSet;
 import com.github.jaiimageio.plugins.tiff.TIFFDirectory;
 import com.github.jaiimageio.plugins.tiff.TIFFField;
-import com.github.jaiimageio.plugins.tiff.TIFFImageWriteParam;
 import com.github.jaiimageio.plugins.tiff.TIFFTag;
 import com.recognition.software.jdeskew.ImageDeskew;
 import com.recognition.software.jdeskew.ImageUtil;
@@ -123,7 +121,7 @@ public class ImageIOHelper {
             }
             // Read the stream metadata
             IIOMetadata streamMetadata = writer.getDefaultStreamMetadata(tiffWriteParam);
-            
+
             List<File> tiffFiles = new ArrayList<>();
             int imageTotal = reader.getNumImages(true);
 
@@ -171,16 +169,16 @@ public class ImageIOHelper {
             throw new RuntimeException(JAI_IMAGE_WRITER_MESSAGE);
         }
         ImageWriter writer = writers.next();
-        
+
         //Set up the writeParam
         ImageWriteParam tiffWriteParam = writer.getDefaultWriteParam();
         tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED);
 
         //Get the stream metadata
         IIOMetadata streamMetadata = writer.getDefaultStreamMetadata(tiffWriteParam);
-        
+
         List<File> tiffFiles = new ArrayList<>();
-        
+
         // all if index == -1; otherwise, only index-th
         for (IIOImage oimage : (index == -1 ? imageList : imageList.subList(index, index + 1))) {
             if (dpiX != 0 && dpiY != 0) {
@@ -366,8 +364,6 @@ public class ImageIOHelper {
     public static List<BufferedImage> getImageList(File inputFile) throws IOException {
         // convert to TIFF if PDF
         File imageFile = getImageFile(inputFile);
-
-        List<BufferedImage> biList = new ArrayList<>();
         String imageFormat = getImageFileFormat(imageFile);
 
         Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(imageFormat);
@@ -378,7 +374,7 @@ public class ImageIOHelper {
 
         try (ImageInputStream iis = ImageIO.createImageInputStream(imageFile)) {
             reader.setInput(iis);
-
+            List<BufferedImage> biList = new ArrayList<>();
             int imageTotal = reader.getNumImages(true);
 
             for (int i = 0; i < imageTotal; i++) {
@@ -410,8 +406,6 @@ public class ImageIOHelper {
     public static List<IIOImage> getIIOImageList(File inputFile) throws IOException {
         // convert to TIFF if PDF
         File imageFile = getImageFile(inputFile);
-
-        List<IIOImage> iioImageList = new ArrayList<>();
         String imageFormat = getImageFileFormat(imageFile);
 
         Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(imageFormat);
@@ -422,7 +416,7 @@ public class ImageIOHelper {
 
         try (ImageInputStream iis = ImageIO.createImageInputStream(imageFile)) {
             reader.setInput(iis);
-
+            List<IIOImage> iioImageList = new ArrayList<>();
             int imageTotal = reader.getNumImages(true);
 
             for (int i = 0; i < imageTotal; i++) {
@@ -488,6 +482,7 @@ public class ImageIOHelper {
                     throw new RuntimeException(JAI_IMAGE_READER_MESSAGE);
                 }
                 ImageReader reader = readers.next();
+
                 try (ImageInputStream iis = ImageIO.createImageInputStream(inputImage)) {
                     reader.setInput(iis);
                     int imageTotal = reader.getNumImages(true);
@@ -501,7 +496,7 @@ public class ImageIOHelper {
                     }
                 }
             }
-            
+
             writer.endWriteSequence();
         } finally {
             writer.dispose();
@@ -571,6 +566,7 @@ public class ImageIOHelper {
         //Set up the writeParam
         ImageWriteParam tiffWriteParam = writer.getDefaultWriteParam();
 //        tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_DISABLED); // comment out to preserve original sizes
+
         if (compressionType != null) {
             tiffWriteParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             tiffWriteParam.setCompressionType(compressionType);
@@ -595,7 +591,7 @@ public class ImageIOHelper {
             for (IIOImage iioImage : imageList) {
                 writer.writeToSequence(iioImage, tiffWriteParam);
             }
-            
+
             writer.endWriteSequence();
         } finally {
             writer.dispose();
