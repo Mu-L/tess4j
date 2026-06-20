@@ -283,3 +283,8 @@ Version 5.18.0 (15 January 2026)
 Version 5.19.0 (26 May 2026)
 - Update lept4j-1.24.0
 - Fix IndexOutOfBoundsException issue with Java 26
+
+Version 5.20.0-SNAPSHOT (20 June 2026)
+- Target Java 17
+- Remove Windows 32-bit support
+- Update dependencies
