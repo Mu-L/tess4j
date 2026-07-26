@@ -180,7 +180,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>6.1.0</version>
+            <version>6.1.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -202,12 +202,12 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>3.0.7</version>
+            <version>3.0.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox-tools</artifactId>
-            <version>3.0.7</version>
+            <version>3.0.8</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
@@ -233,7 +233,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.34</version>
+            <version>1.5.38</version>
             <scope>test</scope>
         </dependency>
         <dependency>
