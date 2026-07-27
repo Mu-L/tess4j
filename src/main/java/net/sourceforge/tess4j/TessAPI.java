@@ -31,7 +31,7 @@ import net.sourceforge.lept4j.Pix;
 import net.sourceforge.tess4j.util.LoadLibs;
 
 /**
- * A Java wrapper for <code>Tesseract OCR 5.5.2 API</code> using
+ * A Java wrapper for <code>Tesseract OCR 5.5.3 API</code> using
  * <code>JNA Interface Mapping</code>.
  */
 public interface TessAPI extends Library, ITessAPI {
@@ -111,15 +111,28 @@ public interface TessAPI extends Library, ITessAPI {
     int TessResultRendererImageNum(TessResultRenderer renderer);
 
     /**
-     * Creates an instance of the base class for all Tesseract APIs.
+     * Creates an instance of the base class for all Tesseract APIs.<br>
+     * <br>
+     * The lifecycle of the instance is:<br>
+     * <br>
+     * 1. <code>TessBaseAPICreate</code><br>
+     * 2. <code>TessBaseAPIInit3</code> (or similar)<br>
+     * 3. <code>TessBaseAPISetImage2</code> (or similar)<br>
+     * 4. <code>TessBaseAPIGetUTF8Text</code> (or similar)<br>
+     * 5. <code>TessDeleteText</code><br>
+     * 6. <code>TessBaseAPIEnd</code> (optional, clears internal structures)<br>
+     * 7. <code>TessBaseAPIDelete</code><br>
+     * <br>
+     * The returned handle must be freed using TessBaseAPIDelete.
      *
      * @return the TesseractAPI instance
      */
     TessBaseAPI TessBaseAPICreate();
 
     /**
-     * Disposes the TesseractAPI instance.
-     *
+     * Disposes the TesseractAPI instance. Frees the memory associated with a
+     * TessBaseAPI instance.
+     * 
      * @param handle the TesseractAPI instance
      */
     void TessBaseAPIDelete(TessBaseAPI handle);
@@ -232,6 +245,10 @@ public interface TessAPI extends Library, ITessAPI {
     void TessBaseAPIPrintVariablesToFile(TessBaseAPI handle, String filename);
 
     /**
+     * Initializes the Tesseract engine. This function (or one of the other
+     * <code>Init</code> functions) must be called before processing any
+     * images.<br>
+     * <br>
      * Instances are now mostly thread-safe and totally independent, but some
      * global parameters remain. Basically it is safe to use multiple
      * TessBaseAPIs in different threads in parallel, UNLESS you use
@@ -495,7 +512,13 @@ public interface TessAPI extends Library, ITessAPI {
      * to use <code>Pix</code> as its internal representation and discard
      * <code>IMAGE</code> altogether. Because of that, an implementation that
      * sources and targets <code>Pix</code> may end up with less copies than an
-     * implementation that does not.
+     * implementation that does not.<br>
+     * <br>
+     * Note: Tesseract does NOT take ownership of the <code>Pix</code>
+     * structure. The caller remains responsible for the memory and must call
+     * <code>pixDestroy</code> on the <code>Pix</code> pointer after it is no
+     * longer needed by the API (e.g. after recognition or after clearing/ending
+     * the API).
      *
      * @param handle the TesseractAPI instance
      * @param pix image
@@ -770,7 +793,10 @@ public interface TessAPI extends Library, ITessAPI {
 
     /**
      * The recognized text is returned as a char* which is coded as UTF-8 and
-     * must be freed with the delete [] operator.
+     * must be freed with the delete [] operator.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @return the pointer to output text
@@ -780,7 +806,10 @@ public interface TessAPI extends Library, ITessAPI {
     /**
      * Make a HTML-formatted string with hOCR markup from the internal data
      * structures. page_number is 0-based but will appear in the output as
-     * 1-based.
+     * 1-based.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @param page_number page number
@@ -790,7 +819,10 @@ public interface TessAPI extends Library, ITessAPI {
 
     /**
      * Make an XML-formatted string with Alto markup from the internal data
-     * structures.
+     * structures.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @param page_number page number
@@ -800,7 +832,10 @@ public interface TessAPI extends Library, ITessAPI {
     
     /**
      * Make an XML-formatted string with PAGE markup from the internal data
-     * structures.
+     * structures.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @param page_number page number
@@ -811,7 +846,10 @@ public interface TessAPI extends Library, ITessAPI {
     /**
      * Make a TSV-formatted string from the internal data structures.
      * page_number is 0-based but will appear in the output as 1-based. Returned
-     * string must be freed with the delete [] operator.
+     * string must be freed with the delete [] operator.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *      
      * @param handle the TesseractAPI instance
      * @param page_number page number
@@ -822,7 +860,10 @@ public interface TessAPI extends Library, ITessAPI {
     /**
      * The recognized text is returned as a char* which is coded as a UTF8 box
      * file and must be freed with the delete [] operator. page_number is a
-     * 0-base page index that will appear in the box file.
+     * 0-base page index that will appear in the box file.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @param page_number number of the page
@@ -833,7 +874,10 @@ public interface TessAPI extends Library, ITessAPI {
     /**
      * Create a UTF8 box file for LSTM training from the internal data
      * structures. page_number is a 0-base page index that will appear in the
-     * box file. Returned string must be freed with the delete [] operator.
+     * box file. Returned string must be freed with the delete [] operator.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @param page_number page number
@@ -844,7 +888,10 @@ public interface TessAPI extends Library, ITessAPI {
     /**
      * Create a UTF8 box file with WordStr strings from the internal data
      * structures. page_number is a 0-base page index that will appear in the
-     * box file. Returned string must be freed with the delete [] operator.
+     * box file. Returned string must be freed with the delete [] operator.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @param page_number page number
@@ -855,7 +902,10 @@ public interface TessAPI extends Library, ITessAPI {
     /**
      * The recognized text is returned as a char* which is coded as UNLV format
      * Latin-1 with specific reject and suspect codes and must be freed with the
-     * delete [] operator.
+     * delete [] operator.<br>
+     * <br>
+     * The caller is responsible for freeing the returned string using
+     * <code>TessDeleteText</code>.
      *
      * @param handle the TesseractAPI instance
      * @return the pointer to UNLV text
